@@ -1,0 +1,3 @@
+Foi criado um projeto em Node.js e configurado o arquivo package.json com as informações básicas do projeto. Em seguida, foi desenvolvido o arquivo diagnostico.js, no qual foi importado o módulo os por meio do require('os').
+
+O programa coleta informações do sistema, como plataforma/arquitetura, memória RAM total, memória RAM livre, quantidade de núcleos do processador, modelo do processador e velocidade do processador. Para facilitar a leitura, os valores da memória foram convertidos para GB e formatados com duas casas decimais. Por fim, as informações coletadas são exibidas no terminal utilizando console.log().
