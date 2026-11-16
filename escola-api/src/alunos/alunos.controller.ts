@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, DefaultValuePipe, ParseIntPipe } from "@nestjs/common";
     import { AlunosService } from "./alunos.service.js";
     import { CreateAlunoDto } from "./dto/create-aluno.dto.js";
-   import { UpdateAlunoDto } from "./dto/updte-aluno.dto.js";
+    import { UpdateAlunoDto } from "./dto/updte-aluno.dto.js";
     import { ApiTags, ApiResponse, ApiOperation, ApiQuery } from "@nestjs/swagger"; 
 
 @ApiTags('alunos')
@@ -43,7 +43,7 @@ export class AlunosController {
 
     @Get()
     @ApiOperation({
-        summary: 'Listar alunos com paginação, filtros opcionais e ordenacao',
+        summary: 'Listar alunos com paginação, filtros opcionais e ordenação',
     })
     @ApiResponse({
         status: 200,
@@ -83,29 +83,34 @@ export class AlunosController {
     })
     @ApiQuery({
         name: 'orderBy',
-        required:false,
+        required: false,
         type: String,
-        description:'Campos(ex: nome, idade, matricula e curso)'
+        description: 'Campos (Ex: nome, idade, matricula e cursos)'
     })
-
     @ApiQuery({
         name: 'orderDirection',
-        required:false,
-        enum:[
-            'asc',
-            'desc',
-        ],
-        description:'(asc) para Crescente e (desc) para decrescente'
+        required: false,
+       enum: [
+        'asc', 
+        'desc',
+    ],
+        description: ' (asc) para Crescente e (desc) para decrescente'
     })
-    findPage(
+    findPagefilter(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number, 
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
         @Query('nome') nome?: string,
         @Query('curso') curso?: string,
         @Query('orderBy') orderBy?: string,
-        @Query ('orderDirection') orderDirection?: 'asc' | 'desc', 
-        ){
-        return this.alunosService.findPagefilter(page, limit, nome, curso);
+        @Query('orderDirection') orderDirection?: "asc" | "desc",
+    ){
+        return this.alunosService.findPagefilter(
+            page, 
+            limit, 
+            nome, 
+            curso, 
+            orderBy, 
+            orderDirection);
     }
 
     @Get(':id')
@@ -155,4 +160,25 @@ export class AlunosController {
     remove(@Param('id') id: string){
         return this.alunosService.remove(id);
     }
+
+    @Patch(':id/restaurar')
+    @ApiOperation({
+        summary: 'Restaurar um Aluno especifico por Soft Delete',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Aluno restaurado com sucesso',
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Aluno não encontrado',
+    })
+    @ApiResponse({
+        status: 500,
+        description: 'Erro interno no Servidor',
+    })
+    restore(@Param('id') id: string){
+        return this.alunosService.restore(id);
+    }
+
 }

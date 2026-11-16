@@ -15,35 +15,22 @@ import { MongoServerError } from "mongodb";
 export class AlunosService {
     constructor(@InjectModel(Aluno.name) private alunoModel: Model<AlunoDocument>) {}
 
-   async create(createAlunoDto: CreateAlunoDto): Promise<Aluno> {
-    const alunoExistente = await this.alunoModel.findOne({
-        matricula: createAlunoDto.matricula
-    });
-
-    if (alunoExistente) {
-        throw new ConflictException(
-            'Já existe um aluno cadastrado com essa matrícula'
-        );
-    }
-
-    try {
-        const novoAluno = new this.alunoModel(createAlunoDto);
-        return await novoAluno.save();
-    } catch (error: unknown) {
-        if (
-            error instanceof MongoServerError &&
-            error.code === 11000
-        ) {
-            throw new ConflictException(
-                'Já existe um aluno cadastrado com essa matrícula'
-            );
+    async create(createAlunoDto: CreateAlunoDto): Promise<Aluno>{
+        try{
+         const createAluno = new this.alunoModel(createAlunoDto);
+        return await createAluno.save();
+        } catch (error: unknown) {
+            if (
+                error instanceof MongoServerError 
+                && 
+                error.code === 11000
+            ){
+                throw new ConflictException('Já existe um aluno cadastrado com essa matricula');
+            }
+            throw new InternalServerErrorException('Erro ao Processar o  cadastro do aluno');
         }
-
-        throw new InternalServerErrorException(
-            'Erro ao processar o cadastro do aluno'
-        );
+       
     }
-}
 
     // async findAll(): Promise <Aluno[]>{
     //     return this.alunoModel.find().exec();
@@ -56,9 +43,10 @@ export class AlunosService {
         nome?: string, 
         curso?: string,
         orderBy?: string,
-        orderDirection?: "asc" | "desc",){
+        orderDirection?: "asc" | "desc",
+    ){
         const skip = (page - 1) * limit;
-        const filter: any = {};
+        const filter: any = {ativo: true}; // Adiciona o filtro para buscar apenas alunos ativos
         const sort: any = {};
 
         if(nome){
@@ -91,7 +79,8 @@ export class AlunosService {
     }
     
     async findOne(id: string): Promise <Aluno>{
-       const aluno = await this.alunoModel.findById(id).exec();
+    //    const aluno = await this.alunoModel.findById(id).exec();
+    const aluno = await this.alunoModel.findOne({ _id: id, ativo: true }).exec();
        if(!aluno){
         throw new NotFoundException(`Aluno com ID ${id} não encontrado.`);
        }
@@ -107,10 +96,18 @@ export class AlunosService {
             return alunoAtualizado;
     }
     async remove(id: string): Promise<Aluno>{
-        const alunoRemovido = await this.alunoModel.findByIdAndDelete(id).exec();
+        const alunoRemovido = await this.alunoModel.findByIdAndUpdate(id, { ativo: false }, { new: true }).exec();
         if(!alunoRemovido){
             throw new NotFoundException(`Aluno com ID ${id} não encontrado.`)
         }
         return alunoRemovido;
+    } //!DELETE
+
+    async restore(id: string): Promise<Aluno>{
+        const alunoRestaurado = await this.alunoModel.findByIdAndUpdate(id, { ativo: true }, { new: true }).exec();
+        if(!alunoRestaurado){
+            throw new NotFoundException(`Aluno não encontrado pelo ID ${id}`);
+        }
+        return alunoRestaurado;
     }
 }
