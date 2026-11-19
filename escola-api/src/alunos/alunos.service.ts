@@ -7,13 +7,13 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { CreateAlunoDto } from "./dto/create-aluno.dto.js";
 import { UpdateAlunoDto } from "./dto/updte-aluno.dto.js";
-import { Aluno,AlunoDocument } from "../schemas/aluno.schame.js";
+import { Aluno,AlunoDoc } from "../schemas/aluno.schame.js";
 import { MongoServerError } from "mongodb";
 
 
 @Injectable()
 export class AlunosService {
-    constructor(@InjectModel(Aluno.name) private alunoModel: Model<AlunoDocument>) {}
+    constructor(@InjectModel(Aluno.name) private alunoModel: Model<AlunoDoc>) {}
 
     async create(createAlunoDto: CreateAlunoDto): Promise<Aluno>{
         try{
